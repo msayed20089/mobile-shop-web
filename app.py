@@ -246,7 +246,9 @@ def api_checkout():
     return jsonify({
         'success': True,
         'receipt_number': receipt_number,
-        'total': float(tota
+        'total': float(total_amount)
+    }), 200
+
 
 # صفحة التقارير
 @app.route('/reports')
