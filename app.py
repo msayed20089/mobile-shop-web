@@ -1,5 +1,4 @@
-[file name]: app.py
-[file content begin]
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
@@ -276,4 +275,4 @@ def add_product_web():
 
 if __name__ == '__main__':
     app.run(debug=True)
-[file content end]
+
