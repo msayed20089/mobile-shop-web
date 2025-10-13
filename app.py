@@ -141,12 +141,19 @@ def cash():
 
 @app.route('/reports')
 def reports():
-    # نجلب كل الفواتير والتفاصيل
     receipts = Receipt.query.order_by(Receipt.date.desc()).all()
-    sales = DailySale.query.order_by(DailySale.id.desc()).limit(50).all()
+    sales = DailySale.query.order_by(DailySale.id.desc()).limit(100).all()
     balance = sum(t.amount for t in CashTransaction.query.all())
+    total_revenue = sum(r.total for r in receipts)
 
-    return render_template('reports.html', receipts=receipts, sales=sales, balance=balance)
+    return render_template(
+        'reports.html',
+        receipts=receipts,
+        sales=sales,
+        balance=balance,
+        total_revenue=total_revenue
+    )
+
 
 
 
