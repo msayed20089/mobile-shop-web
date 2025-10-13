@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>نظام كاشير - ويب</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{{ url_for('templates', filename='style.css') }}" rel="stylesheet">
+  <style>
+    body { background:#f4f6f8; }
+    .product-card { cursor:pointer; }
+    .cart-panel { max-height: 60vh; overflow:auto; }
+    .rtl { direction: rtl; text-align: right; }
+  </style>
 </head>
 <body class="rtl p-3">
 <nav class="navbar navbar-expand-lg navbar-light bg-white mb-3 shadow-sm">
