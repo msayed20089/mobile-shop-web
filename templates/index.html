@@ -1,100 +1,54 @@
-
+{% extends "base.html" %}
+{% block content %}
 <div class="row">
   <div class="col-md-8">
-    <div class="card mb-4">
-      <div class="card-body">
-        <form id="searchForm" class="d-flex mb-3" method="get" action="{{ url_for('index') }}">
-          <input id="q" name="q" value="{{ q }}" class="form-control me-2" placeholder="ابحث باسم المنتج أو الكود..." autofocus>
-          <button class="btn btn-primary">🔍 بحث</button>
-        </form>
+    <div class="card mb-3 p-3">
+      <form id="searchForm" class="d-flex mb-2" method="get" action="{{ url_for('index') }}">
+        <input id="q" name="q" value="{{ q }}" class="form-control me-2" placeholder="اكتب اسم المنتج أو الكود..." autofocus>
+        <button class="btn btn-info">بحث</button>
+      </form>
 
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="{{ url_for('cash') }}" class="btn btn-warning">💰 الخزنة</a>
-          <a href="{{ url_for('reports') }}" class="btn btn-success">📊 التقارير</a>
-          <a href="{{ url_for('add_product_web') }}" class="btn btn-info">➕ إضافة منتج</a>
-        </div>
+      <!-- 🔹 زر للانتقال إلى صفحة الخزنة -->
+      <div class="mb-3 text-end">
+        <a href="{{ url_for('cash') }}" class="btn btn-secondary">💰 الخزنة</a>
       </div>
-    </div>
 
-    <div id="products" class="row g-3">
-      {% for p in products %}
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <div class="card product-card h-100">
-            <div class="card-body">
-              <h6 class="card-title text-primary">{{ p.name }}</h6>
-              <p class="card-text mb-1">
-                <strong>السعر:</strong> {{ '%.2f'|format(p.price) }} جنيه
-              </p>
-              <p class="card-text mb-1">
-                <strong>المخزون:</strong> 
-                <span class="badge bg-{{ 'success' if p.quantity > 10 else 'warning' if p.quantity > 0 else 'danger' }}">
-                  {{ p.quantity }}
-                </span>
-              </p>
-              {% if p.code %}
-              <p class="card-text mb-2">
-                <small class="text-muted">الكود: {{ p.code }}</small>
-              </p>
-              {% endif %}
-              
-              <div class="input-group input-group-sm mb-2">
-                <input type="number" class="form-control quantity-input" value="1" min="1" max="{{ p.quantity }}" 
-                       id="qty-{{ p.id }}">
-                <button class="btn btn-outline-primary" onclick="addToCart({{ p.id }})">
-                  أضف
-                </button>
+      <div id="products" class="row g-3">
+        {% for p in products %}
+          <div class="col-sm-6 col-md-4">
+            <div class="card product-card p-2">
+              <div class="card-body" onclick="addToCartQuick({{ p.id }})" style="cursor:pointer;">
+                <h6 class="card-title">{{ p.name }}</h6>
+                <p class="card-text">السعر: {{ '%.2f'|format(p.price) }} جنيه</p>
+                <p class="card-text text-muted">الكمية: {{ p.quantity }}</p>
               </div>
-            </div>
-            
-            <div class="card-footer bg-transparent">
-              <form action="{{ url_for('delete_product', product_id=p.id) }}" method="POST" 
-                    onsubmit="return confirm('هل أنت متأكد من حذف {{ p.name }}؟');">
-                <button type="submit" class="btn btn-sm btn-danger w-100">🗑 حذف</button>
+
+              <!-- 🔹 زر حذف المنتج -->
+              <form action="{{ url_for('delete_product', product_id=p.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف {{ p.name }}؟');">
+                <button type="submit" class="btn btn-sm btn-danger w-100 mt-1">🗑 حذف المنتج</button>
               </form>
             </div>
           </div>
-        </div>
-      {% else %}
-        <div class="col-12">
-          <div class="alert alert-info text-center">
-            {% if q %}
-              لا توجد منتجات مطابقة للبحث "{{ q }}"
-            {% else %}
-              لا توجد منتجات. <a href="{{ url_for('add_product_web') }}">أضف منتج جديد</a>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
   </div>
 
   <div class="col-md-4">
-    <div class="card sticky-top" style="top: 20px;">
-      <div class="card-header bg-success text-white">
-        <h5 class="mb-0">🛒 سلة المشتريات</h5>
+    <div class="card p-3">
+      <h5>السلة</h5>
+      <div id="cartPanel" class="cart-panel mb-2"></div>
+      <div class="mb-2">
+        <label>طريقة الدفع</label>
+        <select id="payment_method" class="form-select">
+          <option>💵 نقدي</option>
+          <option>💳 بطاقة ائتمان</option>
+          <option>📱 محفظة إلكترونية</option>
+        </select>
       </div>
-      <div class="card-body">
-        <div id="cartPanel" class="cart-panel mb-3">
-          <div class="text-center text-muted">السلة فارغة</div>
-        </div>
-        
-        <div class="mb-3">
-          <label class="form-label"><strong>طريقة الدفع</strong></label>
-          <select id="payment_method" class="form-select">
-            <option value="نقدي">💵 نقدي</option>
-            <option value="بطاقة ائتمان">💳 بطاقة ائتمان</option>
-            <option value="محفظة إلكترونية">📱 محفظة إلكترونية</option>
-          </select>
-        </div>
-        
-        <div class="d-grid gap-2">
-          <button class="btn btn-success btn-lg" onclick="checkout()">
-            ✅ إتمام البيع
-          </button>
-          <button class="btn btn-outline-danger" onclick="clearCart()">
-            🗑 تفريغ السلة
-          </button>
-        </div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-success" onclick="checkout()">إتمام البيع</button>
+        <button class="btn btn-warning" onclick="clearCart()">تفريغ السلة</button>
       </div>
     </div>
   </div>
@@ -105,150 +59,57 @@ let cart = [];
 
 function renderCart(){
   const panel = document.getElementById('cartPanel');
-  
-  if (cart.length === 0) {
-    panel.innerHTML = '<div class="text-center text-muted">السلة فارغة</div>';
-    return;
-  }
-  
-  let html = '';
+  panel.innerHTML = '';
   let total = 0;
-  
-  cart.forEach((item, index) => {
-    const itemTotal = item.price * item.quantity;
-    total += itemTotal;
-    
-    html += `
-      <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-        <div class="flex-grow-1">
-          <strong class="d-block">${item.name}</strong>
-          <small class="text-muted">
-            ${item.quantity} × ${item.price.toFixed(2)} = ${itemTotal.toFixed(2)} جنيه
-          </small>
+  cart.forEach((it, idx) => {
+    total += it.price * it.quantity;
+    panel.innerHTML += `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <strong>${it.name}</strong><br>
+          ${it.quantity} × ${it.price.toFixed(2)} = ${(it.price*it.quantity).toFixed(2)}
         </div>
-        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${index})">
-          ✕
-        </button>
+        <div>
+          <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${idx})">حذف</button>
+        </div>
       </div>
     `;
   });
-  
-  html += `
-    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-      <strong>الإجمالي:</strong>
-      <strong class="text-success">${total.toFixed(2)} جنيه</strong>
-    </div>
-  `;
-  
-  panel.innerHTML = html;
+  panel.innerHTML += `<hr><div class="d-flex justify-content-between"><strong>الإجمالي</strong><strong>${total.toFixed(2)} جنيه</strong></div>`;
 }
 
-function addToCart(productId){
-  const quantityInput = document.getElementById(`qty-${productId}`);
-  const quantity = parseInt(quantityInput.value) || 1;
-  
-  if (quantity <= 0) {
-    alert('الكمية يجب أن تكون أكبر من الصفر');
-    return;
-  }
-
-  fetch(`/api/product/${productId}`)
-    .then(response => response.json())
-    .then(product => {
-      if (quantity > product.quantity) {
-        alert(`الكمية المطلوبة (${quantity}) أكبر من المتوفر (${product.quantity})`);
-        return;
-      }
-      
-      const existingItem = cart.find(item => item.id === product.id);
-      if (existingItem) {
-        if (existingItem.quantity + quantity > product.quantity) {
-          alert(`إجمالي الكمية في السلة سيتجاوز المخزون المتوفر`);
-          return;
-        }
-        existingItem.quantity += quantity;
-      } else {
-        cart.push({
-          id: product.id,
-          name: product.name,
-          price: parseFloat(product.price),
-          quantity: quantity
-        });
-      }
-      
-      renderCart();
-      quantityInput.value = 1;
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('خطأ في جلب بيانات المنتج');
-    });
-}
-
-function removeFromCart(index){
-  cart.splice(index, 1);
-  renderCart();
-}
-
-function clearCart(){
-  if (cart.length === 0) return;
-  
-  if (confirm('هل تريد تفريغ السلة بالكامل؟')) {
-    cart = [];
+function addToCartQuick(id){
+  fetch(`/api/product/${id}`).then(r=>r.json()).then(p=>{
+    let qty = prompt(`المنتج: ${p.name}\nالسعر: ${p.price}\nالمتوفر: ${p.quantity}\nاكتب الكمية:`, "1");
+    if(!qty) return;
+    qty = parseInt(qty);
+    if(isNaN(qty) || qty <= 0){ alert('أدخل كمية صحيحة'); return; }
+    if(qty > p.quantity){ alert('الكمية أكبر من المتوفر'); return; }
+    const existing = cart.find(c=>c.id===p.id);
+    if(existing){ existing.quantity += qty; }
+    else { cart.push({id:p.id, name:p.name, price: parseFloat(p.price), quantity: qty}); }
     renderCart();
-  }
-}
-
-function checkout(){
-  if (cart.length === 0) {
-    alert('السلة فارغة');
-    return;
-  }
-  
-  const payment_method = document.getElementById('payment_method').value;
-  
-  if (!confirm(`هل تريد إتمام البيع بإجمالي ${calculateTotal().toFixed(2)} جنيه؟`)) {
-    return;
-  }
-  
-  fetch('/api/checkout', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      cart: cart,
-      payment_method: payment_method
-    })
-  })
-  .then(response => response.json())
-  .then(result => {
-    if (result.success) {
-      alert(`✅ تمت عملية البيع بنجاح\nرقم الفاتورة: ${result.receipt_number}\nالمبلغ: ${result.total.toFixed(2)} جنيه`);
-      cart = [];
-      renderCart();
-      // إعادة تحميل الصفحة لتحديث المخزون
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      alert(`❌ فشلت العملية: ${result.error || 'حدث خطأ غير معروف'}`);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('❌ خطأ في الاتصال بالخادم');
   });
 }
 
-function calculateTotal(){
-  return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+function removeFromCart(idx){ cart.splice(idx,1); renderCart(); }
+function clearCart(){ if(confirm('هل تريد تفريغ السلة؟')){ cart = []; renderCart(); } }
+function checkout(){
+  if(cart.length===0){ alert('السلة فارغة'); return; }
+  const payment_method = document.getElementById('payment_method').value;
+  fetch('/api/checkout', {
+    method:'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({cart:cart, payment_method: payment_method})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){ alert('تمت العملية. الفاتورة: '+res.receipt_number); cart = []; renderCart(); }
+    else alert('خطأ: '+(res.error||'فشل'));
+  }).catch(e=>alert('خطأ في الاتصال'));
 }
 
-// البحث بالزر Enter
 document.getElementById('q').addEventListener('keydown', function(e){
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    document.getElementById('searchForm').submit();
-  }
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('searchForm').submit(); }
 });
-
-// التهيئة الأولية
 renderCart();
 </script>
+{% endblock %}
