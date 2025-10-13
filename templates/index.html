@@ -8,7 +8,6 @@
         <button class="btn btn-info">بحث</button>
       </form>
 
-      <!-- 🔹 زر للانتقال إلى صفحة الخزنة -->
       <div class="mb-3 text-end">
         <a href="{{ url_for('cash') }}" class="btn btn-secondary">💰 الخزنة</a>
       </div>
@@ -23,8 +22,7 @@
                 <p class="card-text text-muted">الكمية: {{ p.quantity }}</p>
               </div>
 
-              <!-- 🔹 زر حذف المنتج -->
-              <form action="{{ url_for('delete_product', product_id=p.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف {{ p.name }}؟');">
+              <form action="{{ url_for('delete_product', pid=p.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف {{ p.name }}؟');">
                 <button type="submit" class="btn btn-sm btn-danger w-100 mt-1">🗑 حذف المنتج</button>
               </form>
             </div>
@@ -80,6 +78,7 @@ function renderCart(){
 
 function addToCartQuick(id){
   fetch(`/api/product/${id}`).then(r=>r.json()).then(p=>{
+    if(p.error){ alert('المنتج غير موجود'); return; }
     let qty = prompt(`المنتج: ${p.name}\nالسعر: ${p.price}\nالمتوفر: ${p.quantity}\nاكتب الكمية:`, "1");
     if(!qty) return;
     qty = parseInt(qty);
@@ -89,7 +88,7 @@ function addToCartQuick(id){
     if(existing){ existing.quantity += qty; }
     else { cart.push({id:p.id, name:p.name, price: parseFloat(p.price), quantity: qty}); }
     renderCart();
-  });
+  }).catch(()=>alert('خطأ في الاتصال'));
 }
 
 function removeFromCart(idx){ cart.splice(idx,1); renderCart(); }
@@ -106,8 +105,7 @@ function checkout(){
     else alert('خطأ: '+(res.error||'فشل'));
   }).catch(e=>alert('خطأ في الاتصال'));
 }
-
-document.getElementById('q').addEventListener('keydown', function(e){
+document.getElementById('q')?.addEventListener('keydown', function(e){
   if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('searchForm').submit(); }
 });
 renderCart();
