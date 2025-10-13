@@ -141,9 +141,13 @@ def cash():
 
 @app.route('/reports')
 def reports():
-    sales = DailySale.query.order_by(DailySale.id.desc()).limit(100).all()
-    cash_balance = db.session.query(db.func.sum(CashTransaction.amount)).scalar() or 0
-    return render_template('reports.html', sales=sales, cash_balance=cash_balance)
+    # نجلب كل الفواتير والتفاصيل
+    receipts = Receipt.query.order_by(Receipt.date.desc()).all()
+    sales = DailySale.query.order_by(DailySale.id.desc()).limit(50).all()
+    balance = sum(t.amount for t in CashTransaction.query.all())
+
+    return render_template('reports.html', receipts=receipts, sales=sales, balance=balance)
+
 
 
 # ========================= تهيئة قاعدة البيانات =============================
