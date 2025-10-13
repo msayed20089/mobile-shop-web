@@ -105,10 +105,11 @@ def seed_defaults():
             db.session.add(prod)
         db.session.commit()
 
-@app.before_first_request
-def setup_database():
+# ✅ استدعاء تهيئة قاعدة البيانات مباشرة بعد إنشاء التطبيق
+with app.app_context():
     db.create_all()
     seed_defaults()
+
 
 # ---------- واجهات الويب (Routes) ----------
 @app.route('/')
