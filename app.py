@@ -312,6 +312,13 @@ def api_product(pid):
     p = Product.query.get_or_404(pid)
     return jsonify({'id': p.id, 'name': p.name, 'price': float(p.price), 'quantity': p.quantity, 'category': p.category, 'description': p.description or ''})
 
+class CashTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    note = db.Column(db.String(200))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # endpoint بسيط للحصول على قائمة سريعة للـ cart preview
 @app.route('/api/products_all')
 def api_products_all():
