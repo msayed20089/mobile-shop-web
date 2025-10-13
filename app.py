@@ -133,10 +133,11 @@ def api_checkout():
 
 # ✅ عرض صفحة الخزنة
 @app.route('/cash')
-def cash_page():
+def cash():
     transactions = CashTransaction.query.order_by(CashTransaction.date.desc()).all()
-    total_balance = sum(t.amount for t in transactions)
-    return render_template('cash.html', transactions=transactions, total_balance=total_balance)
+    balance = sum(t.amount for t in transactions)
+    return render_template('cash.html', transactions=transactions, balance=balance)
+
 
 @app.route('/reports')
 def reports():
