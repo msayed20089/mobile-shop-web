@@ -38,6 +38,13 @@ class Product(db.Model):
     created_date = db.Column(db.String)
     supplier = db.Column(db.String)
 
+class CashTransaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)  # موجب أو سالب
+    note = db.Column(db.String(200))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Receipt(db.Model):
     __tablename__ = 'receipts'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -126,6 +133,22 @@ def index():
     else:
         products = Product.query.all()
     return render_template('index.html', products=products, q=q)
+
+@app.route('/cash', methods=['GET', 'POST'])
+def cash():
+    if request.method == 'POST':
+        amount = float(request.form['amount'])
+        note = request.form.get('note', '')
+        tx = CashTransaction(amount=amount, note=note)
+        db.session.add(tx)
+        db.session.commit()
+        flash('تم تحديث الخزنة بنجاح', 'success')
+        return redirect('/cash')
+
+    transactions = CashTransaction.query.order_by(CashTransaction.date.desc()).all()
+    total = sum(tx.amount for tx in transactions)
+    return render_template('cash.html', transactions=transactions, total=total)
+
 
 @app.route('/product/<int:product_id>')
 def product_detail(product_id):
