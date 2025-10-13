@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>تقرير مبيعات اليوم ({{ today_date }})</h4>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card p-3 mb-3">
+      <h5>معلومات سريعة</h5>
+      <p>عدد الفواتير اليوم: <strong>{{ total_sales_count }}</strong></p>
+      <p>إجمالي المبيعات: <strong>{{ '%.2f'|format(total_revenue) }} جنيه</strong></p>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <h5>أعلى المنتجات مبيعاً</h5>
+      <ol>
+        {% for name, sold in top %}
+          <li>{{ name }} — {{ sold }} قطعة</li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 mb-3">
+      <h5>تقرير المخزون (أقل إلى أعلى)</h5>
+      <ul>
+        {% for p in low_stock %}
+          <li>{{ p.name }} — {{ p.quantity }} قطعة — {{ '%.2f'|format(p.price) }} جنيه</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card p-3">
+      <h5>سجل المبيعات اليومي (تفصيلي)</h5>
+      <div style="max-height:300px; overflow:auto;">
+        <table class="table table-sm">
+          <thead><tr><th>الوقت</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+          <tbody>
+          {% for d in daily_log %}
+            <tr>
+              <td>{{ d.sale_time }}</td>
+              <td>{{ d.product_name }}</td>
+              <td>{{ d.quantity }}</td>
+              <td>{{ '%.2f'|format(d.price) }}</td>
+              <td>{{ '%.2f'|format(d.total) }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
