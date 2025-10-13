@@ -1,35 +1,122 @@
+[file name]: cash.html
+[file content begin]
 {% extends "base.html" %}
-{% block title %}الخزنة{% endblock %}
 {% block content %}
-<h2>💰 الخزنة</h2>
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">💰 إدارة الخزنة</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="amount" class="form-label"><strong>المبلغ:</strong></label>
+            <input type="number" step="0.01" class="form-control" id="amount" name="amount" 
+                   placeholder="أدخل المبلغ" required>
+            <div class="invalid-feedback">
+              من فضلك أدخل المبلغ
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="note" class="form-label"><strong>ملاحظة:</strong></label>
+            <input type="text" class="form-control" id="note" name="note" 
+                   placeholder="مثلاً: شراء كروت - دخل مبيعات - مصروفات">
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success">
+              💾 حفظ العملية
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
-<form method="POST" class="form">
-    <label>المبلغ:</label>
-    <input type="number" step="0.01" name="amount" required>
-    <label>ملاحظة:</label>
-    <input type="text" name="note" placeholder="مثلاً: شراء كروت - دخل مبيعات">
-    <button type="submit">حفظ العملية</button>
-</form>
+    <!-- بطاقة الرصيد -->
+    <div class="card">
+      <div class="card-body text-center">
+        <h6 class="card-title">الرصيد الحالي</h6>
+        <h2 class="text-{{ 'success' if total >= 0 else 'danger' }}">
+          {{ "%.2f"|format(total) }} جنيه
+        </h2>
+        <small class="text-muted">آخر تحديث: {{ transactions[0].date.strftime('%Y-%m-%d %H:%M') if transactions else '--' }}</small>
+      </div>
+    </div>
+  </div>
 
-<hr>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">📋 سجل المعاملات</h5>
+      </div>
+      <div class="card-body p-0">
+        {% if transactions %}
+          <div class="table-responsive" style="max-height: 600px;">
+            <table class="table table-striped table-hover mb-0">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th>التاريخ والوقت</th>
+                  <th>المبلغ</th>
+                  <th>الملاحظة</th>
+                  <th>النوع</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tx in transactions %}
+                  <tr>
+                    <td>
+                      <small>{{ tx.date.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </td>
+                    <td>
+                      <span class="badge bg-{{ 'success' if tx.amount > 0 else 'danger' }} fs-6">
+                        {{ "%.2f"|format(tx.amount) }} جنيه
+                      </span>
+                    </td>
+                    <td>{{ tx.note or '-' }}</td>
+                    <td>
+                      {% if tx.amount > 0 %}
+                        <span class="badge bg-success">دخل</span>
+                      {% else %}
+                        <span class="badge bg-danger">مصروف</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-5">
+            <h5>لا توجد معاملات مسجلة</h5>
+            <p>ابدأ بإضافة أول معاملة للخزنة</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 
-<h3>الرصيد الحالي: {{ "%.2f"|format(total) }} جنيه</h3>
+<div class="mt-4 text-center">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-primary">← العودة للرئيسية</a>
+</div>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>التاريخ</th>
-        <th>المبلغ</th>
-        <th>الملاحظة</th>
-    </tr>
-    {% for tx in transactions %}
-    <tr>
-        <td>{{ tx.date.strftime('%Y-%m-%d %H:%M') }}</td>
-        <td style="color: {{ 'green' if tx.amount > 0 else 'red' }};">
-            {{ "%.2f"|format(tx.amount) }}
-        </td>
-        <td>{{ tx.note }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
+<script>
+// تفعيل التحقق من النماذج
+(function() {
+  'use strict';
+  var forms = document.querySelectorAll('.needs-validation');
+  Array.prototype.slice.call(forms).forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
 {% endblock %}
+[file content end]
