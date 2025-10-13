@@ -1,38 +1,102 @@
+[file name]: add_product.html
+[file content begin]
 {% extends "base.html" %}
 {% block content %}
-<div class="card p-3">
-  <h5>إضافة منتج جديد</h5>
-  <form method="post">
-    <div class="mb-2">
-      <label>كود المنتج</label>
-      <input name="product_id" value="{{ next_id }}" class="form-control" required>
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">➕ إضافة منتج جديد</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+          <!-- المعلومات الأساسية -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="product_id" class="form-label">كود المنتج</label>
+              <input type="text" class="form-control" id="product_id" name="product_id" 
+                     placeholder="سيتم توليده تلقائياً" value="{{ generate_product_code() if generate_product_code }}">
+              <div class="form-text">اتركه فارغاً للتوليد التلقائي</div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="product_barcode" class="form-label">الباركود</label>
+              <input type="text" class="form-control" id="product_barcode" name="product_barcode" 
+                     value="{{ barcode }}" readonly>
+              <div class="form-text">تم توليد الباركود تلقائياً</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="product_name" class="form-label">اسم المنتج <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="product_name" name="product_name" required>
+            <div class="invalid-feedback">من فضلك أدخل اسم المنتج</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="product_price" class="form-label">السعر (جنيه) <span class="text-danger">*</span></label>
+              <input type="number" step="0.01" class="form-control" id="product_price" name="product_price" required>
+              <div class="invalid-feedback">من فضلك أدخل سعر المنتج</div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <label for="product_quantity" class="form-label">الكمية <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="product_quantity" name="product_quantity" required>
+              <div class="invalid-feedback">من فضلك أدخل كمية المنتج</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="product_category" class="form-label">الفئة</label>
+            <input type="text" class="form-control" id="product_category" name="product_category" 
+                   placeholder="مثال: إلكترونيات - ملابس - أدوات">
+          </div>
+
+          <div class="mb-3">
+            <label for="product_description" class="form-label">الوصف</label>
+            <textarea class="form-control" id="product_description" name="product_description" 
+                      rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg">
+              ✅ إضافة المنتج
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+              ← العودة للرئيسية
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
-    <div class="mb-2">
-      <label>اسم المنتج</label>
-      <input name="product_name" class="form-control" required>
-    </div>
-    <div class="mb-2">
-      <label>السعر</label>
-      <input name="product_price" class="form-control" required>
-    </div>
-    <div class="mb-2">
-      <label>الكمية</label>
-      <input name="product_quantity" class="form-control" required>
-    </div>
-    <div class="mb-2">
-      <label>الفئة</label>
-      <input name="product_category" class="form-control">
-    </div>
-    <div class="mb-2">
-      <label>الباركود</label>
-      
-      <input name="product_barcode" value="{{ barcode }}" class="form-control">
-    </div>
-    <div class="mb-2">
-      <label>الوصف</label>
-      <textarea name="product_description" class="form-control"></textarea>
-    </div>
-    <button class="btn btn-primary">إضافة المنتج</button>
-  </form>
+  </div>
 </div>
+
+<script>
+// تفعيل التحقق من النماذج
+(function() {
+  'use strict';
+  var forms = document.querySelectorAll('.needs-validation');
+  Array.prototype.slice.call(forms).forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+
+// توليد كود منتج تلقائي إذا كان الحقل فارغاً
+document.addEventListener('DOMContentLoaded', function() {
+  const productIdField = document.getElementById('product_id');
+  if (!productIdField.value) {
+    // يمكن إضافة دالة لتوليد كود عشوائي هنا إذا لزم الأمر
+    productIdField.placeholder = 'سيتم توليد كود تلقائياً';
+  }
+});
+</script>
 {% endblock %}
+[file content end]
