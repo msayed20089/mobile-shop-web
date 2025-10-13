@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}الخزنة{% endblock %}
+{% block content %}
+<h2>💰 الخزنة</h2>
+
+<form method="POST" class="form">
+    <label>المبلغ:</label>
+    <input type="number" step="0.01" name="amount" required>
+    <label>ملاحظة:</label>
+    <input type="text" name="note" placeholder="مثلاً: شراء كروت - دخل مبيعات">
+    <button type="submit">حفظ العملية</button>
+</form>
+
+<hr>
+
+<h3>الرصيد الحالي: {{ "%.2f"|format(total) }} جنيه</h3>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>التاريخ</th>
+        <th>المبلغ</th>
+        <th>الملاحظة</th>
+    </tr>
+    {% for tx in transactions %}
+    <tr>
+        <td>{{ tx.date.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td style="color: {{ 'green' if tx.amount > 0 else 'red' }};">
+            {{ "%.2f"|format(tx.amount) }}
+        </td>
+        <td>{{ tx.note }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
