@@ -7,15 +7,26 @@
         <input id="q" name="q" value="{{ q }}" class="form-control me-2" placeholder="اكتب اسم المنتج أو الكود..." autofocus>
         <button class="btn btn-info">بحث</button>
       </form>
+
+      <!-- 🔹 زر للانتقال إلى صفحة الخزنة -->
+      <div class="mb-3 text-end">
+        <a href="{{ url_for('cash') }}" class="btn btn-secondary">💰 الخزنة</a>
+      </div>
+
       <div id="products" class="row g-3">
         {% for p in products %}
           <div class="col-sm-6 col-md-4">
-            <div class="card product-card p-2" data-id="{{ p.id }}" onclick="addToCartQuick({{ p.id }})">
-              <div class="card-body">
+            <div class="card product-card p-2">
+              <div class="card-body" onclick="addToCartQuick({{ p.id }})" style="cursor:pointer;">
                 <h6 class="card-title">{{ p.name }}</h6>
                 <p class="card-text">السعر: {{ '%.2f'|format(p.price) }} جنيه</p>
                 <p class="card-text text-muted">الكمية: {{ p.quantity }}</p>
               </div>
+
+              <!-- 🔹 زر حذف المنتج -->
+              <form action="{{ url_for('delete_product', product_id=p.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف {{ p.name }}؟');">
+                <button type="submit" class="btn btn-sm btn-danger w-100 mt-1">🗑 حذف المنتج</button>
+              </form>
             </div>
           </div>
         {% endfor %}
@@ -68,14 +79,12 @@ function renderCart(){
 }
 
 function addToCartQuick(id){
-  // نجلب تفاصيل المنتج ثم نعرض نافذة دخول الكمية
   fetch(`/api/product/${id}`).then(r=>r.json()).then(p=>{
     let qty = prompt(`المنتج: ${p.name}\nالسعر: ${p.price}\nالمتوفر: ${p.quantity}\nاكتب الكمية:`, "1");
     if(!qty) return;
     qty = parseInt(qty);
     if(isNaN(qty) || qty <= 0){ alert('أدخل كمية صحيحة'); return; }
     if(qty > p.quantity){ alert('الكمية أكبر من المتوفر'); return; }
-    // إذا موجود مسبقًا زد الكمية
     const existing = cart.find(c=>c.id===p.id);
     if(existing){ existing.quantity += qty; }
     else { cart.push({id:p.id, name:p.name, price: parseFloat(p.price), quantity: qty}); }
@@ -97,6 +106,7 @@ function checkout(){
     else alert('خطأ: '+(res.error||'فشل'));
   }).catch(e=>alert('خطأ في الاتصال'));
 }
+
 document.getElementById('q').addEventListener('keydown', function(e){
   if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('searchForm').submit(); }
 });
