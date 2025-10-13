@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3 p-3">
+      <form id="searchForm" class="d-flex mb-2" method="get" action="{{ url_for('index') }}">
+        <input id="q" name="q" value="{{ q }}" class="form-control me-2" placeholder="اكتب اسم المنتج أو الكود..." autofocus>
+        <button class="btn btn-info">بحث</button>
+      </form>
+      <div id="products" class="row g-3">
+        {% for p in products %}
+          <div class="col-sm-6 col-md-4">
+            <div class="card product-card p-2" data-id="{{ p.id }}" onclick="addToCartQuick({{ p.id }})">
+              <div class="card-body">
+                <h6 class="card-title">{{ p.name }}</h6>
+                <p class="card-text">السعر: {{ '%.2f'|format(p.price) }} جنيه</p>
+                <p class="card-text text-muted">الكمية: {{ p.quantity }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>السلة</h5>
+      <div id="cartPanel" class="cart-panel mb-2"></div>
+      <div class="mb-2">
+        <label>طريقة الدفع</label>
+        <select id="payment_method" class="form-select">
+          <option>💵 نقدي</option>
+          <option>💳 بطاقة ائتمان</option>
+          <option>📱 محفظة إلكترونية</option>
+        </select>
+      </div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-success" onclick="checkout()">إتمام البيع</button>
+        <button class="btn btn-warning" onclick="clearCart()">تفريغ السلة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let cart = [];
+
+function renderCart(){
+  const panel = document.getElementById('cartPanel');
+  panel.innerHTML = '';
+  let total = 0;
+  cart.forEach((it, idx) => {
+    total += it.price * it.quantity;
+    panel.innerHTML += `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <strong>${it.name}</strong><br>
+          ${it.quantity} × ${it.price.toFixed(2)} = ${(it.price*it.quantity).toFixed(2)}
+        </div>
+        <div>
+          <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${idx})">حذف</button>
+        </div>
+      </div>
+    `;
+  });
+  panel.innerHTML += `<hr><div class="d-flex justify-content-between"><strong>الإجمالي</strong><strong>${total.toFixed(2)} جنيه</strong></div>`;
+}
+
+function addToCartQuick(id){
+  // نجلب تفاصيل المنتج ثم نعرض نافذة دخول الكمية
+  fetch(`/api/product/${id}`).then(r=>r.json()).then(p=>{
+    let qty = prompt(`المنتج: ${p.name}\nالسعر: ${p.price}\nالمتوفر: ${p.quantity}\nاكتب الكمية:`, "1");
+    if(!qty) return;
+    qty = parseInt(qty);
+    if(isNaN(qty) || qty <= 0){ alert('أدخل كمية صحيحة'); return; }
+    if(qty > p.quantity){ alert('الكمية أكبر من المتوفر'); return; }
+    // إذا موجود مسبقًا زد الكمية
+    const existing = cart.find(c=>c.id===p.id);
+    if(existing){ existing.quantity += qty; }
+    else { cart.push({id:p.id, name:p.name, price: parseFloat(p.price), quantity: qty}); }
+    renderCart();
+  });
+}
+
+function removeFromCart(idx){ cart.splice(idx,1); renderCart(); }
+function clearCart(){ if(confirm('هل تريد تفريغ السلة؟')){ cart = []; renderCart(); } }
+function checkout(){
+  if(cart.length===0){ alert('السلة فارغة'); return; }
+  const payment_method = document.getElementById('payment_method').value;
+  fetch('/api/checkout', {
+    method:'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({cart:cart, payment_method: payment_method})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){ alert('تمت العملية. الفاتورة: '+res.receipt_number); cart = []; renderCart(); }
+    else alert('خطأ: '+(res.error||'فشل'));
+  }).catch(e=>alert('خطأ في الاتصال'));
+}
+document.getElementById('q').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('searchForm').submit(); }
+});
+renderCart();
+</script>
+{% endblock %}
