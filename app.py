@@ -189,6 +189,7 @@ def api_checkout():
 
     total_amount = sum(Decimal(str(item['price'])) * int(item['quantity']) for item in cart)
     receipt_number = f"RCP{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
     receipt = Receipt(
         receipt_number=receipt_number,
         date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -196,9 +197,9 @@ def api_checkout():
         payment_method=payment_method
     )
     db.session.add(receipt)
-    db.session.flush()  # to get receipt.id
+    db.session.flush()  # علشان نقدر نجيب receipt.id
 
-    # حفظ عناصر الفاتورة وتحديث المخزون وتسجيل في daily_sales
+    # 🔹 حفظ عناصر الفاتورة وتحديث المخزون وتسجيل في daily_sales
     for it in cart:
         pid = it.get('id')
         name = it.get('name')
@@ -231,8 +232,21 @@ def api_checkout():
         )
         db.session.add(ds)
 
+    # 🔹 بعد حفظ الفاتورة بالكامل، نضيف المبلغ إلى الخزنة تلقائيًا
+    cash_entry = CashTransaction(
+        amount=float(total_amount),
+        note=f"مبيعات ({payment_method}) - فاتورة {receipt_number}",
+        date=datetime.now()
+    )
+    db.session.add(cash_entry)
+
+    # حفظ كل شيء
     db.session.commit()
-    return jsonify({'success': True, 'receipt_number': receipt_number, 'total': float(total_amount)}), 200
+
+    return jsonify({
+        'success': True,
+        'receipt_number': receipt_number,
+        'total': float(tota
 
 # صفحة التقارير
 @app.route('/reports')
