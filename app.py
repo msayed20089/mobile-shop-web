@@ -138,6 +138,13 @@ def cash_page():
     total_balance = sum(t.amount for t in transactions)
     return render_template('cash.html', transactions=transactions, total_balance=total_balance)
 
+@app.route('/reports')
+def reports():
+    sales = DailySale.query.order_by(DailySale.id.desc()).limit(100).all()
+    cash_balance = db.session.query(db.func.sum(CashTransaction.amount)).scalar() or 0
+    return render_template('reports.html', sales=sales, cash_balance=cash_balance)
+
+
 # ========================= تهيئة قاعدة البيانات =============================
 with app.app_context():
     db.create_all()
