@@ -1,3 +1,5 @@
+[file name]: reports.html
+[file content begin]
 {% extends "base.html" %}
 {% block content %}
 <h4>تقرير مبيعات اليوم ({{ today_date }})</h4>
@@ -12,7 +14,7 @@
     <div class="card p-3 mb-3">
       <h5>أعلى المنتجات مبيعاً</h5>
       <ol>
-        {% for name, sold in top %}
+        {% for name, sold in top_products %}
           <li>{{ name }} — {{ sold }} قطعة</li>
         {% endfor %}
       </ol>
@@ -35,7 +37,7 @@
         <table class="table table-sm">
           <thead><tr><th>الوقت</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
           <tbody>
-          {% for d in daily_log %}
+          {% for d in daily_sales %}
             <tr>
               <td>{{ d.sale_time }}</td>
               <td>{{ d.product_name }}</td>
@@ -51,3 +53,4 @@
   </div>
 </div>
 {% endblock %}
+[file content end]
