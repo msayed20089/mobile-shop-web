@@ -150,6 +150,39 @@ with app.app_context():
     db.create_all()
     print("✅ Database tables created successfully")
 
+# صفحة إضافة منتج من الويب
+@app.route('/add_product', methods=['GET', 'POST'])
+def add_product_web():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = request.form.get('price', type=float)
+        quantity = request.form.get('quantity', type=int)
+        category = request.form.get('category')
+        description = request.form.get('description', '')
+        barcode = request.form.get('barcode', '')
+        image = request.form.get('image', '')
+
+        if not name or price is None or quantity is None:
+            flash('❌ من فضلك أدخل بيانات صحيحة للمنتج', 'danger')
+        else:
+            new_product = Product(
+                name=name,
+                price=price,
+                quantity=quantity,
+                category=category,
+                description=description,
+                barcode=barcode,
+                image=image,
+                date_added=datetime.now().strftime('%Y-%m-%d')
+            )
+            db.session.add(new_product)
+            db.session.commit()
+            flash('✅ تم إضافة المنتج بنجاح', 'success')
+            return redirect(url_for('index'))
+
+    return render_template('add_product.html')
+
+
 # ========================= التشغيل =============================
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
