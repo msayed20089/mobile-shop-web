@@ -38,11 +38,6 @@ class Product(db.Model):
     created_date = db.Column(db.String)
     supplier = db.Column(db.String)
 
-class CashTransaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    amount = db.Column(db.Float, nullable=False)  # موجب أو سالب
-    note = db.Column(db.String(200))
-    date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Receipt(db.Model):
@@ -333,6 +328,7 @@ class CashTransaction(db.Model):
     amount = db.Column(db.Float, nullable=False)
     note = db.Column(db.String(200))
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 
 # endpoint بسيط للحصول على قائمة سريعة للـ cart preview
