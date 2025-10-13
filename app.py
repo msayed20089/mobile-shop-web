@@ -298,6 +298,14 @@ def add_product_web():
         barcode = ''.join(str((random := datetime.now().timestamp()) )[:13])  # cheap uniqueness placeholder
         return render_template('add_product.html', next_id=next_id, barcode=barcode)
 
+@app.route('/delete_product/<int:product_id>', methods=['POST'])
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash(f'تم حذف المنتج: {product.name}', 'info')
+    return redirect('/')
+
 # API للحصول على تفاصيل المنتج (لعرض المودال)
 @app.route('/api/product/<int:pid>')
 def api_product(pid):
