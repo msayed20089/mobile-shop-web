@@ -23,6 +23,9 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
+
 
 # ---------- نماذج قواعد البيانات (Models) ----------
 class Product(db.Model):
